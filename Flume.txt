@@ -1,0 +1,199 @@
+Apace Flume 1.5.0
+Flume user guide 
+Flume is used to real time data into HDFS 
+Flume is used to integrate weblogs data into HDFS. For this sqoop is not useful.
+There is open source requirement where web logs need to capture into HDFS of web services. For this tools like Flume, Kafka, Storm useful. 
+There are 3 flows in Flume:
+	1. Multi agent flow 
+ 	2. Consolidation flow 
+	3. Multiplexing flow
+
+# check the flume version on CDH
+$ flume-ng version 
+$ flume-ng --version 
+$ cd /opt/examples  # to see the flume examples 
+$ cd flume 
+$ cd conf
+$ vi flume.cong # to see the flume architecture
+
+# resouce - Google the document Cloudera Flume Exercise , these logs we will transfer the data into HDFS
+
+# check the telnet installed or not 
+$ telnet # if telnet not installed, install telnet using below command
+$ sudo yum -y install telnet 
+# after installtion completed, check again 
+$telnet 
+telnet> quit
+$ ping localhost #to get the loop back adapter IP address 
+$ ping quickstart.cloudera 
+$ ping www.yahoo.com 
+$ ifconfig -a #to get your laptop IP address (192.168.163.132)
+$ ping 192.168.163.132 #to communicate with host 
+# to communicate with service on host, we need to do telnet with IP address with Port number
+$ ps -ef |grep ssh # to find ssh service processes.ssh service mostly runs on port 22 
+$ telnet 192.168.163.132 22 #using this we can telnet ssh service on our host or from outside 
+# telnet is configured to get log data from webservices 
+
+*********** Flume example ****************
+
+$ mkdir flume (/user/cloudera)
+$ mkdir conf 
+$ vi example.conf
+ 
+# copy the below program into example.conf file 
+
+*********** START OF THE FILE using logger sink *************************
+
+# example.conf: A single-node Flume configuration
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444
+
+# Describe the sink
+a1.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+
+*********** END OF THE FILE using logger sink *******************************
+
+ESC :wq ENTER # to save & comeout of the example.conf file
+make sure your path is /home/cloudera/flume/conf
+
+$ flume-ng agent --name a1 \
+  --conf /home/cloudera/flume/conf \
+  --conf-file /home/cloudera/flume/conf/example.conf 
+
+# so this will start the agent 
+# open another terminal and give command $ telnet localhost 44444 and type some msg here 
+
+This flume jobs is uses netsat for source, memory for channel & logger for sink
+
+
+*********** START OF THE FILE using HDFS sink *************************
+
+# example.conf: A single-node Flume configuration
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444
+
+# Describe the sink
+a1.sinks.k1.type = hdfs 
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Customize sink for hdfs
+a1.sinks.k1.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume
+a1.sinks.k1.hdfs.filePrefix = netcat
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+
+*********** END OF THE FILE using HDFS sink  ******************************
+
+# save the file and come out 
+
+$ flume-ng agent -n a1 -c -f example.conf  OR give the absolute path details like next line 
+$ flume-ng agent -n a1 -c /home/cloudera/flume/conf/ -f /home/cloudera/flume/conf/example.conf 
+
+# enter some data and open another terminal and give the command below to see the file with prefix "netcat"
+$ hadoop fs -ls /use/cloudera/flume 
+
+# check the data of the file /user/cloudera/flume/netcat.1476862282435. Data in this file is garblem format as it is sequence file
+$ hadoop fs -cat /user/cloudera/flume/netcat.1476862282435 
+# stop the flume job with CTRL+c
+# delete the file 
+$ hadoop fs -rm -R /user/cloudera/flume
+
+*********** START OF THE FILE using filetype=DataStream *************************
+
+# example.conf: A single-node Flume configuration
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444
+
+# Describe the sink
+a1.sinks.k1.type = hdfs
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Customize sink for hdfs
+a1.sinks.k1.hdfs.path = hdfs://quickstart.cloudera:8020/user/cloudera/flume
+a1.sinks.k1.hdfs.filePrefix = netcat
+a1.sinks.k1.hdfs.fileType = DataStream
+a1.sinks.k1.hdfs.rollInterval = 120
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+
+*********** END OF THE FILE using filetype=DataStream *************************
+
+
+Video 24 yet to watch 
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$ Copy files from LOCAL to HDFS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+Map Reduce HDFS - watch this video 
+
+-- Copy files from LOCAL File System to HDFS
+
+$ hadoop fs ENTER 
+$ ls -ltr # to see the local files 
+$ hadoop fs -ls # HDFS files 
+$ hadoop fs -help ls #for help on ls ( we should not use - here before ls)
+$ copyFromLocal , -put #these commands will be used copying from local to HDFS 
+$ cp #cp command will be used to copy from one HDFS location to another HDFS location 
+$ hadoop fs -help copyFromLocal 
+# what is diff btw copyFromLocal & put commands ???????????
+
+$ hadoop fs -put /home/cloudera/export.csv /user/cloudera/data # copy local file export.csv into HDFS location /user/cloudera/data 
+hadoop fs -put -p -f /home/cloudera/export.csv /user/cloudera/data
+# -p to preserve the properties such as read/write 
+# -f to overwrite the existing file
+# after with -p -f , we can observe file read/write properties. It will have source properties(read/write & date) 
+
+
+-- Copy files from HDFS into Local File System using FS commands
+
+$ hadoop fs 
+# copyToLocal, get # these command used to copy to local from source (souce could be any)
+$ hadoop fs -help copyToLocal #for help on copyToLocal
+$ hadoop fs -help get # for help on get command
+# destination must be a directory when you copy to Local
+
+$ hadoop fs -get /user/cloudera/data/export.csv /home/cloudera/data #copy from HDFS to local directory
+
