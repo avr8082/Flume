@@ -34,7 +34,7 @@ $ ps -ef |grep ssh # to find ssh service processes.ssh service mostly runs on po
 $ telnet 192.168.163.132 22 #using this we can telnet ssh service on our host or from outside 
 # telnet is configured to get log data from webservices 
 
-*********** Flume example ****************
+************** Flume example *******************************************
 
 $ mkdir flume (/user/cloudera)
 $ mkdir conf 
@@ -81,8 +81,7 @@ $ flume-ng agent --name a1 \
 
 This flume jobs is uses netsat for source, memory for channel & logger for sink
 
-
-*********** START OF THE FILE using HDFS sink *************************
+********** START OF THE FILE using HDFS sink *************************
 
 # example.conf: A single-node Flume configuration
 # Name the components on this agent
@@ -110,9 +109,7 @@ a1.sinks.k1.hdfs.filePrefix = netcat
 # Bind the source and sink to the channel
 a1.sources.r1.channels = c1
 a1.sinks.k1.channel = c1
-
 *********** END OF THE FILE using HDFS sink  ******************************
-
 # save the file and come out 
 
 $ flume-ng agent -n a1 -c -f example.conf  OR give the absolute path details like next line 
@@ -128,7 +125,6 @@ $ hadoop fs -cat /user/cloudera/flume/netcat.1476862282435
 $ hadoop fs -rm -R /user/cloudera/flume
 
 *********** START OF THE FILE using filetype=DataStream *************************
-
 # example.conf: A single-node Flume configuration
 # Name the components on this agent
 a1.sources = r1
@@ -157,12 +153,8 @@ a1.sinks.k1.hdfs.rollInterval = 120
 # Bind the source and sink to the channel
 a1.sources.r1.channels = c1
 a1.sinks.k1.channel = c1
-
 *********** END OF THE FILE using filetype=DataStream *************************
-
-
 Video 24 yet to watch 
-
 
 
 $$$$$$$$$$$$$$$$$$$$$$$$$$$ Copy files from LOCAL to HDFS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
